@@ -21,6 +21,4 @@ COPY conf/nginx.conf /etc/nginx/nginx.conf
 COPY ./entrypoint.sh /bin/
 RUN chmod +x /bin/entrypoint.sh
 
-VOLUME ["/root/.acme.sh", "/etc/nginx/ssl"]
-
 ENTRYPOINT ["entrypoint.sh"]
