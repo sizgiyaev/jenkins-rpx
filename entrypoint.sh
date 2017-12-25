@@ -10,6 +10,15 @@ function update_fqdn() {
     sed -i -Ee "s/(.*)jenkins_fqdn(.*)/\1$1\2/g" $2
 }
 
+
+# update_service_url - Updates jenkins service url for proxy_pass
+# Arguments:
+#    $1 - Full URL
+#    $2 - Filename
+function update_service_url() {
+    sed -i -Ee "s/(.*proxy_pass.*)jenkins-master(.*)/\1$1\2/g" $2
+}
+
 ssl_enabled=0
 
 while [[ $# -gt 0 ]]
@@ -26,7 +35,8 @@ if [[ $ssl_enabled -gt 0 ]]
 then
     rm -f /etc/nginx/conf.d/jenkins-http.conf
     update_fqdn $JENKINS_FQDN /etc/nginx/conf.d/jenkins-https.conf
-    
+    [[ ! -z $JENKINS_SERVICE ]] && update_service_url $JENKINS_SERVICE /etc/nginx/conf.d/jenkins-https.conf
+
     # Issue certificate from letsencrypt and install in nginx folder
     [[ -z $ACME_DNSSLEEP ]] && ACME_DNSSLEEP=60
     set +e
@@ -43,6 +53,7 @@ then
 else
     rm -f /etc/nginx/conf.d/jenkins-https.conf
     update_fqdn $JENKINS_FQDN /etc/nginx/conf.d/jenkins-http.conf
+    [[ ! -z $JENKINS_SERVICE ]] && update_service_url $JENKINS_SERVICE /etc/nginx/conf.d/jenkins-http.conf
 fi
 
 exec nginx -g "daemon off;"
